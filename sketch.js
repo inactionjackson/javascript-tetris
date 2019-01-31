@@ -2,28 +2,26 @@ let lastTime = 0;
 let deltaTime = 0;
 var testTetro;
 function setup() {
-  createCanvas(gridWidth*gridSpacing+1,gridHeight*gridSpacing+1);
+  createCanvas(GRID_HEIGHT*GRID_SPACING+1,GRID_HEIGHT*GRID_SPACING+1);
 
-  testTetro = new Tetro("t",5);
+  testTetro = new Tetro("t");
   setFrameRate(15);
   setUpGameGrid()
-  copyPieceToGrid(testTetro);
 }
 
 function draw() {
+  
+  clear();
+
+  testTetro.rotate();
+  testTetro.moveHorizontal();
   deltaTime = millis()-lastTime;
   lastTime = millis();
   vertMoveTimer += deltaTime;
-  if(vertMoveTimer >= vertMoveTime){
+  if(vertMoveTimer >= vertMoveTime || bShouldMoveDown){
     vertMoveTimer = 0;
-    bShouldMoveDown = true;
+    testTetro.moveVertical();
   }
-  clear();
-  //copyPieceToGrid(testTetro);
-  //clearPieceFromGrid(testTetro);
-  testTetro.rotate();
-
-  //testTetro = moveTetro(testTetro);
  
   drawGame();
 }
@@ -40,20 +38,30 @@ function drawTetro(t){
 }
 
 function drawGame(){
-  //noStroke();
-  for(let y=0;y<gameGrid.length;y++){
-    for(let x=0;x<gameGrid[y].length;x++){
+  noStroke();
+  if(testTetro !== undefined && testTetro !== null){
+    for(let y=0;y<testTetro.shape.length;y++){
+      for(let x=0;x<testTetro.shape[y].length;x++){
+        if(testTetro.shape[y][x] !== 0){
+          fill(color(testTetro.shape[y][x]));
+          rect(((testTetro.x + x)*GRID_SPACING),((testTetro.y + y)*GRID_SPACING),GRID_SPACING,GRID_SPACING)
+        }
+      }
+    }
+  }
+  for(let y=0;y<GAME_GRID.length;y++){
+    for(let x=0;x<GAME_GRID[y].length;x++){
       
-      if(gameGrid[y][x] !== 0){
+      if(GAME_GRID[y][x] !== 0){
         strokeWeight(2);
         stroke("black");
-        fill(color(gameGrid[y][x]));
-        rect((x*gridSpacing),(y*gridSpacing),gridSpacing,gridSpacing)
+        fill(color(GAME_GRID[y][x]));
+        rect((x*GRID_SPACING),(y*GRID_SPACING),GRID_SPACING,GRID_SPACING)
       }else{
         noFill();
         strokeWeight(1);
         stroke("grey")
-        rect((x*gridSpacing),(y*gridSpacing),gridSpacing,gridSpacing)
+        rect((x*GRID_SPACING),(y*GRID_SPACING),GRID_SPACING,GRID_SPACING)
       }
     }
   }
@@ -73,7 +81,7 @@ function keyPressed(){
       nextMove.x = 1;
       break;
     case DOWN_ARROW:
-      bShouldMoveDown = true;
+      vertMoveTimer = vertMoveTime;
       break;
     case SHIFT:
       nextRotate = -1;
