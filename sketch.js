@@ -1,61 +1,67 @@
+
 let lastTime = 0;
 let deltaTime = 0;
-var testTetro;
+let activePiece;
+const GAME_GRID = new GameGrid(GRID_HEIGHT,GRID_WIDTH,0);
+const FLASH_COLOR = "green";
+const FLASH_TIME_LIMIT =60;
+let flashTimer = FLASH_TIME_LIMIT;
+let bIsFlashing = false;
+
 function setup() {
   createCanvas(GRID_HEIGHT*GRID_SPACING+1,GRID_HEIGHT*GRID_SPACING+1);
 
-  testTetro = new Tetro("t");
+  activePiece = new Piece(GAME_GRID);
   setFrameRate(15);
-  setUpGameGrid()
 }
 
 function draw() {
-  
   clear();
 
-  testTetro.rotate();
-  testTetro.moveHorizontal();
+  //updeate piece position
+  activePiece.rotate();
+  activePiece.moveHorizontal();
+
+  //get time since last frame
   deltaTime = millis()-lastTime;
   lastTime = millis();
-  vertMoveTimer += deltaTime;
-  if(vertMoveTimer >= vertMoveTime || bShouldMoveDown){
-    vertMoveTimer = 0;
-    testTetro.moveVertical();
+  // update timers
+  verticalMoveTimer += deltaTime;
+  if(bIsFlashing){
+    flashTimer -= deltaTime;
+  }
+  
+
+  if(verticalMoveTimer >= verticalMoveTimeLimit || bShouldMoveDown){
+    verticalMoveTimer = 0;
+    activePiece.moveVertical();
   }
  
   drawGame();
-}
-
-function drawTetro(t){
-  for(let y=0;y<t.length;y++){
-    for(let x=0;x<t[y].length;x++){
-      if(t[y][x] != 0){
-        fill("blue");
-        rect(100+(x*10),100+(y*10),10,10)
-      }
-    }
-  }
+  flashClearedRows();
 }
 
 function drawGame(){
   noStroke();
-  if(testTetro !== undefined && testTetro !== null){
-    for(let y=0;y<testTetro.shape.length;y++){
-      for(let x=0;x<testTetro.shape[y].length;x++){
-        if(testTetro.shape[y][x] !== 0){
-          fill(color(testTetro.shape[y][x]));
-          rect(((testTetro.x + x)*GRID_SPACING),((testTetro.y + y)*GRID_SPACING),GRID_SPACING,GRID_SPACING)
+  if(activePiece !== undefined && activePiece !== null){
+    for(let y=0;y<activePiece.shape.length;y++){
+      for(let x=0;x<activePiece.shape[y].length;x++){
+        if(activePiece.shape[y][x] !== 0){
+          strokeWeight(2);
+          stroke("black");
+          fill(color(activePiece.color));
+          rect(((activePiece.x + x)*GRID_SPACING),((activePiece.y + y)*GRID_SPACING),GRID_SPACING,GRID_SPACING)
         }
       }
     }
   }
-  for(let y=0;y<GAME_GRID.length;y++){
-    for(let x=0;x<GAME_GRID[y].length;x++){
+  for(let y=0;y < GRID_HEIGHT;y++){
+    for(let x=0;x < GRID_WIDTH ;x++){
       
-      if(GAME_GRID[y][x] !== 0){
+      if(GAME_GRID.grid[y][x] !== 0){
         strokeWeight(2);
-        stroke("black");
-        fill(color(GAME_GRID[y][x]));
+        stroke("grey");
+        fill(color(GAME_GRID.grid[y][x]));
         rect((x*GRID_SPACING),(y*GRID_SPACING),GRID_SPACING,GRID_SPACING)
       }else{
         noFill();
@@ -68,20 +74,33 @@ function drawGame(){
 }
 
 function flashClearedRows(){
-  //TODO: make animated delayed flash when rows are match
+  if(clearedRows.length !== 0){
+    bIsFlashing = true;
+    fill(color(FLASH_COLOR));
+    for(let i = 0; i < clearedRows.length; i++){
+      rect(0,clearedRows[i] * GRID_SPACING,GRID_WIDTH*GRID_SPACING,GRID_SPACING+(GRID_SPACING*.25));
+    }
+    if(flashTimer < 0){
+      clearedRows.splice(0,clearedRows.length);
+      flashTimer = FLASH_TIME_LIMIT;
+      bIsFlashing = false;
+    }
+  }
+
 }
 
 function keyPressed(){
+  //TODO: make it possible to hold down a button
   let key = keyCode;
   switch(key){
     case LEFT_ARROW:
-      nextMove.x = -1;
+      nextMoveX = -1;
       break;
     case RIGHT_ARROW:
-      nextMove.x = 1;
+      nextMoveX = 1;
       break;
     case DOWN_ARROW:
-      vertMoveTimer = vertMoveTime;
+      verticalMoveTimer = verticalMoveTimeLimit;
       break;
     case SHIFT:
       nextRotate = -1;
