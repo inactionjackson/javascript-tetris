@@ -4,8 +4,7 @@ const GRID_WIDTH = 12; // actual size of second dimension in gameGrid
 const STARTING_Y = 0; // starting height of new tetro
 const STARTING_X = Math.round(GRID_WIDTH / 2);
 const COLORS = ["red", "blue", "green", "purple", "orange", "magenta", "silver", "cyan"];
-
-let clearedRows = []; // used for animation effect, no affect on gameplay
+const clearedRows = []; // used for animation effect, no affect on gameplay
 let score = 0;
 let nextMoveX =  0  // buffers user input for next frame, gets cleared at end of frame
 let nextRotate = 0;
@@ -107,7 +106,6 @@ class Piece {
         ]};
     
     };
-    //TODO: make color specific to shape
     constructor(grid) {
         this.grid = grid;
         this.nextLetter = this.getRandomLetter();
@@ -194,10 +192,11 @@ class Piece {
         }
     }
     getRandomLetter(){
-        return random(Object.getOwnPropertyNames(Piece.SHAPES()));
+        let keys = Object.keys(Piece.SHAPES());
+        return keys[Math.floor(Math.random()*keys.length)];
     }
     getColor(){
-        switch(this.shapeLetter){
+        switch(this.shapeLetter.toString()){
             case "i":
                 this.color = "red";
                 break;
@@ -207,7 +206,7 @@ class Piece {
             case "l":
                 this.color = "purple";
                 break;
-            case "0":
+            case "o":
                 this.color = "cyan";
                 break;
             case "s":
@@ -217,9 +216,10 @@ class Piece {
                 this.color = "silver";
                 break;
             case "z":
-                this.color - "green";
+                this.color = "green";
                 break;
             default:
+                this.color = "black";
                 break;
         }
     }
