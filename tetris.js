@@ -69,8 +69,7 @@ class GameGrid{
 
 
 class Piece {
-    static SHAPES () {
-        return{
+    SHAPES = {
         t: [
             [1, 1, 1],
             [0, 1, 0]
@@ -103,9 +102,9 @@ class Piece {
             [1,1,0],
             [0,1,1]
             
-        ]};
-    
+        ]
     };
+    
     constructor(grid) {
         this.grid = grid;
         this.nextLetter = this.getRandomLetter();
@@ -116,7 +115,7 @@ class Piece {
         this.oldRotation = this.rotation;
         this.shapeLetter = this.nextLetter;
         this.nextLetter = this.getRandomLetter();
-        this.shape = Piece.SHAPES()[this.shapeLetter];
+        this.shape = this.SHAPES[this.shapeLetter];
         this.x = STARTING_X;
         this.y = STARTING_Y;
         this.getColor();
@@ -137,16 +136,16 @@ class Piece {
 
             switch (this.rotation) {
                 case 0: // default
-                    this.shape = Piece.SHAPES()[this.shapeLetter];
+                    this.shape = this.SHAPES[this.shapeLetter];
                     break;
                 case 1: // 90CW rotation
-                    this.shape = mirror2dArray(rotate2dArray90(Piece.SHAPES()[this.shapeLetter]),"y");
+                    this.shape = mirror2dArray(rotate2dArray90(this.SHAPES[this.shapeLetter]),"y");
                     break;
                 case 2: // 180 rotation
-                    this.shape = mirror2dArray(mirror2dArray(Piece.SHAPES()[this.shapeLetter],"y"),"x");
+                    this.shape = mirror2dArray(mirror2dArray(this.SHAPES[this.shapeLetter],"y"),"x");
                     break;
                 case 3: // 270CW rotation
-                    this.shape = mirror2dArray(rotate2dArray90(Piece.SHAPES()[this.shapeLetter]),"x");
+                    this.shape = mirror2dArray(rotate2dArray90(this.SHAPES[this.shapeLetter]),"x");
                     break;
                 default:
                     break;
@@ -192,7 +191,8 @@ class Piece {
         }
     }
     getRandomLetter(){
-        let keys = Object.keys(Piece.SHAPES());
+        //TODO: add logic to avoid too many of the same letters in a row
+        let keys = Object.keys(this.SHAPES);
         return keys[Math.floor(Math.random()*keys.length)];
     }
     getColor(){
