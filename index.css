@@ -1,0 +1,65 @@
+body {padding: 0; margin: 0;}
+#master{
+    display: block;
+    position: absolute;
+}
+#startScreen{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: gray;
+    z-index: 100;
+}
+#startScreen h2{
+    width: 100%;
+    text-align: center;
+    font-size: 1.8em;
+    text-decoration: underline;
+}
+#startScreen_instructions{
+    margin: 5%;
+    text-align: center;
+    font-size: 1.4em;
+}
+#startScreen_footer{
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    bottom: 5px;
+}
+#startScreen_start{
+    margin: 10%;
+    display: block;
+    width: 80%;
+    border: none;
+    background: rgb(20,20,20);
+    padding: 10px 0px;
+    z-index: 10;
+    color: white;
+    font-size: 2em;
+    font-weight: bold;
+}
+#startScreen_start:hover{
+    cursor: pointer;
+}
+
+#sideButtons{
+    position: absolute;
+    width: 96px;
+    right: 2px;
+    bottom: 0;
+    z-index: 2;
+}
+#sideButtons button{
+    display: block;
+    margin-bottom: 10px;
+    width: 100%;
+    border: none;
+    background: rgb(20,20,20);
+    padding: 10px 0px;
+    z-index: 10;
+    color: white;
+}
+#sideButtons button:hover{
+    cursor: pointer;
+}

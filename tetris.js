@@ -8,16 +8,20 @@ const clearedRows = []; // used for animation effect, no affect on gameplay
 let score = 0;
 let nextMoveX =  0  // buffers user input for next frame, gets cleared at end of frame
 let nextRotate = 0;
-let bShouldMoveDown = false;
-let verticalMoveTimeLimit = 10000;
-let verticalMoveTimer = 0;
+let verticalMoveTimeLimit = 1000;
+
 let nextLetter = "";
 
 class GameGrid{
     constructor(height,width,defaultValue = 0){
-        this.grid = create2dArray(GRID_HEIGHT,GRID_WIDTH,defaultValue);
+        this.grid = create2dArray(height,width,defaultValue);
         this.height = height;
         this.width = width;
+        this.defaultValue = defaultValue;
+    }
+
+    reset(){
+        this.grid = create2dArray(this.height,this.width,this.defaultValue);
     }
 
     copyPieceToGrid(t) {
@@ -57,13 +61,12 @@ class GameGrid{
                 clearedRows.push(y);
             }
         }
-        //TODO: implement flood fill
         matchedRows.forEach(r => {
             this.grid.splice(r, 1);
             this.grid.unshift(new Array(this.width).fill(0));
-            verticalMoveTimeLimit -= 30;
+            verticalMoveTimeLimit = Math.max(verticalMoveTimeLimit - 30,60);
         });
-        score += numOfmatches * numOfmatches;
+        score += numOfmatches * numOfmatches * 10;
     }
 }
 
@@ -104,17 +107,20 @@ class Piece {
             
         ]
     };
+    getShapes(){
+        return this.SHAPES;
+    }
     
     constructor(grid) {
         this.grid = grid;
-        this.nextLetter = this.getRandomLetter();
+        this.getRandomNextLetter();
         this.reset();
     }
     reset() {
         this.rotation = 0;
         this.oldRotation = this.rotation;
         this.shapeLetter = this.nextLetter;
-        this.nextLetter = this.getRandomLetter();
+        this.getRandomNextLetter();
         this.shape = this.SHAPES[this.shapeLetter];
         this.x = STARTING_X;
         this.y = STARTING_Y;
@@ -177,7 +183,9 @@ class Piece {
                 console.log("game over")
                 frameRate(0);
             }
+            return true;
         }
+        return false;
     }
     moveHorizontal() {
         this.oldX = this.x;
@@ -190,10 +198,16 @@ class Piece {
             this.y = this.oldY;
         }
     }
-    getRandomLetter(){
-        //TODO: add logic to avoid too many of the same letters in a row
+    getRandomNextLetter(){
         let keys = Object.keys(this.SHAPES);
-        return keys[Math.floor(Math.random()*keys.length)];
+        let newLetter = keys[Math.floor(Math.random()*keys.length)]
+        console.log(this.shapeLetter, newLetter);
+        if(newLetter !== this.shapeLetter){
+            this.nextLetter = newLetter;
+        }else{
+            this.getRandomNextLetter();
+        }
+        
     }
     getColor(){
         switch(this.shapeLetter.toString()){

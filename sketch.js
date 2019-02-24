@@ -2,75 +2,121 @@
 let lastTime = 0;
 let deltaTime = 0;
 let activePiece;
+
+const FRAME_RATE = 30;
 const GAME_GRID = new GameGrid(GRID_HEIGHT,GRID_WIDTH,0);
 const FLASH_COLOR = "green";
 const FLASH_TIME_LIMIT =60;
+const SIDE_X_PADDING = 10;
+const SIDE_Y_PADDING = 10;
+const SIDE_WIDTH = 100;
 let flashTimer = FLASH_TIME_LIMIT;
 let bIsFlashing = false;
 
-function setup() {
-  createCanvas(GRID_HEIGHT*GRID_SPACING+1,GRID_HEIGHT*GRID_SPACING+1);
+let autoVerticalMoveTimer = 0;
+let manualVerticalMoveTimer = 0;
+let horizontalMoveTimer = 0;
+const MANUAL_MOVE_TIME_LIMIT = 600;
+let bisHorizontalButtonDown = false;
+let bisVerticalButtonDown = false;
 
+let bisPaused = true;
+
+function setup() {
+  let cnv = createCanvas(GRID_WIDTH*GRID_SPACING+1+SIDE_WIDTH,GRID_HEIGHT*GRID_SPACING+1);
+  let gameContainer = document.querySelector('#master');
+  gameContainer.setAttribute('max_width', GRID_WIDTH*GRID_SPACING+1+SIDE_WIDTH,GRID_HEIGHT*GRID_SPACING+1);
+  cnv.parent(gameContainer);
   activePiece = new Piece(GAME_GRID);
-  setFrameRate(15);
+
+  setFrameRate(0);
 }
 
 function draw() {
   clear();
-
-  //updeate piece position
-  activePiece.rotate();
-  activePiece.moveHorizontal();
-
   //get time since last frame
   deltaTime = millis()-lastTime;
   lastTime = millis();
   // update timers
-  verticalMoveTimer += deltaTime;
+  autoVerticalMoveTimer += deltaTime;
+  if(bisHorizontalButtonDown){
+    horizontalMoveTimer += deltaTime;
+  }
+  if(bisVerticalButtonDown){
+    manualVerticalMoveTimer += deltaTime;
+  }
   if(bIsFlashing){
     flashTimer -= deltaTime;
   }
   
-
-  if(verticalMoveTimer >= verticalMoveTimeLimit || bShouldMoveDown){
-    verticalMoveTimer = 0;
-    activePiece.moveVertical();
+  //updeate piece position
+  activePiece.rotate();
+  if(horizontalMoveTimer >= MANUAL_MOVE_TIME_LIMIT){
+    if(keyIsDown(LEFT_ARROW)){
+      nextMoveX = -1;
+    }else if(keyIsDown(RIGHT_ARROW)){
+      nextMoveX = 1;
+    }
   }
- 
-  drawGame();
+
+  activePiece.moveHorizontal();
+
+  if(autoVerticalMoveTimer >= verticalMoveTimeLimit || manualVerticalMoveTimer >= MANUAL_MOVE_TIME_LIMIT){
+    autoVerticalMoveTimer = 0;
+    if(activePiece.moveVertical()){
+      manualVerticalMoveTimer = 0;
+    }
+  }
+
+  
+  
+  drawGameGrid();
+  drawPiece(activePiece.shape,activePiece.x,activePiece.y,activePiece.color);
+  drawSidePanel();
   flashClearedRows();
 }
 
-function drawGame(){
-  noStroke();
-  if(activePiece !== undefined && activePiece !== null){
-    for(let y=0;y<activePiece.shape.length;y++){
-      for(let x=0;x<activePiece.shape[y].length;x++){
-        if(activePiece.shape[y][x] !== 0){
-          strokeWeight(2);
-          stroke("black");
-          fill(color(activePiece.color));
-          rect(((activePiece.x + x)*GRID_SPACING),((activePiece.y + y)*GRID_SPACING),GRID_SPACING,GRID_SPACING)
-        }
-      }
-    }
-  }
+function drawGameGrid(){
+  
   for(let y=0;y < GRID_HEIGHT;y++){
     for(let x=0;x < GRID_WIDTH ;x++){
       
       if(GAME_GRID.grid[y][x] !== 0){
         strokeWeight(2);
-        stroke("grey");
+        stroke(color(40,40,40));
         fill(color(GAME_GRID.grid[y][x]));
         rect((x*GRID_SPACING),(y*GRID_SPACING),GRID_SPACING,GRID_SPACING)
       }else{
-        noFill();
+        fill(color(100,100,100))
         strokeWeight(1);
-        stroke("grey")
+        stroke(color(40,40,40))
         rect((x*GRID_SPACING),(y*GRID_SPACING),GRID_SPACING,GRID_SPACING)
       }
     }
   }
+}
+
+function drawPiece(shape, px, py, pcolor = "black"){
+  noStroke();
+  if(shape !== undefined && shape !== null){
+    for(let y=0;y<shape.length;y++){
+      for(let x=0;x<shape[y].length;x++){
+        if(shape[y][x] !== 0){
+          strokeWeight(2);
+          stroke("black");
+          fill(color(pcolor));
+          rect(((px + x)*GRID_SPACING),((py + y)*GRID_SPACING),GRID_SPACING,GRID_SPACING)
+        }
+      }
+    }
+  }
+}
+
+function drawSidePanel(){
+  fill(0);
+  textSize(20);
+  text(score.toString().padStart(8,0),GRID_WIDTH*GRID_SPACING+SIDE_X_PADDING,SIDE_Y_PADDING+10);
+  drawPiece(activePiece.getShapes()[activePiece.nextLetter],GRID_WIDTH+1.5,2, 177);
 }
 
 function flashClearedRows(){
@@ -78,7 +124,7 @@ function flashClearedRows(){
     bIsFlashing = true;
     fill(color(FLASH_COLOR));
     for(let i = 0; i < clearedRows.length; i++){
-      rect(0,clearedRows[i] * GRID_SPACING,GRID_WIDTH*GRID_SPACING,GRID_SPACING+(GRID_SPACING*.25));
+      rect(0,clearedRows[i] * GRID_SPACING,GRID_WIDTH*GRID_SPACING,GRID_SPACING*1.25);
     }
     if(flashTimer < 0){
       clearedRows.splice(0,clearedRows.length);
@@ -90,17 +136,19 @@ function flashClearedRows(){
 }
 
 function keyPressed(){
-  //TODO: make it possible to hold down a button
   let key = keyCode;
   switch(key){
     case LEFT_ARROW:
-      nextMoveX = -1;
+      nextMoveX = keyIsDown(RIGHT_ARROW) ? 0 : -1;
+      bisHorizontalButtonDown = true;
       break;
     case RIGHT_ARROW:
-      nextMoveX = 1;
+    nextMoveX = keyIsDown(LEFT_ARROW) ? 0 : 1;
+      bisHorizontalButtonDown = true;
       break;
     case DOWN_ARROW:
-      verticalMoveTimer = verticalMoveTimeLimit;
+      autoVerticalMoveTimer = verticalMoveTimeLimit;
+      bisVerticalButtonDown = true;
       break;
     case SHIFT:
       nextRotate = -1;
@@ -111,4 +159,51 @@ function keyPressed(){
     default:
       break;
   }
+}
+
+function keyReleased(){
+  let key = keyCode;
+  switch(key){
+    case LEFT_ARROW:
+      bisHorizontalButtonDown = keyIsDown(RIGHT_ARROW) ? bisHorizontalButtonDown : false;
+      horizontalMoveTimer = 0;
+      break;
+    case RIGHT_ARROW:
+      bisHorizontalButtonDown = keyIsDown(LEFT_ARROW) ? bisHorizontalButtonDown : false;
+      horizontalMoveTimer = 0;
+      break;
+    case DOWN_ARROW:
+      bisVerticalButtonDown = false;
+      manualVerticalMoveTimer = 0;
+      break;
+    default:
+      break;
+  }
+}
+
+function pauseGame(){
+  console.log(frameRate());
+  if(!bisPaused){
+    bisPaused = true;
+    setFrameRate(0);
+    document.querySelector('#sideButtons_pause').innerHTML = "unPause";
+  }else{
+    bisPaused = false;
+    setFrameRate(FRAME_RATE);
+    document.querySelector('#sideButtons_pause').innerHTML = "Pause";
+  }
+}
+
+function resetGame(){
+  GAME_GRID.reset();
+  activePiece.reset();
+  score = 0;
+  if(bisPaused){
+    pauseGame();
+  }
+}
+
+function startGame(){
+  document.querySelector('#startScreen').remove();
+  resetGame();
 }

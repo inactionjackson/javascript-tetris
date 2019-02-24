@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>p5.js example</title>
-    <style> body {padding: 0; margin: 0;} </style>
+    <link rel="stylesheet" type="text/css" href="index.css">
     <script src="polyfills.js"></script>
     <script src="helpers.js"></script>
     <script src="../p5.min.js"></script>
@@ -14,5 +14,17 @@
     <script src="sketch.js"></script>
   </head>
   <body>
+    <div id="master">
+      <div id="startScreen">
+        <h2>Tetris.js</h2>
+        <p id="startScreen_instructions">use arrows to control movement, "ctr" and "shift" to rotate piece</p>
+        <button id="startScreen_start" onclick="startGame()">Start Game</button>
+        <p id="startScreen_footer">by: Andrew Jackson</p>
+      </div>
+      <div id="sideButtons">
+        <button id="sideButtons_pause" onclick="pauseGame()">Pause</button>
+        <button id="sideButtons_restart" onclick="resetGame()">Restart</button>
+      </div>
+    </div>
   </body>
 </html>
