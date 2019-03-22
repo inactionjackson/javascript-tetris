@@ -68,8 +68,6 @@ function draw() {
     }
   }
 
-  
-  
   drawGameGrid();
   drawPiece(activePiece.shape,activePiece.x,activePiece.y,activePiece.color);
   drawSidePanel();
