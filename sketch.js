@@ -1,4 +1,4 @@
-
+/** Uses p5.js for canvas rendering and frame timing */
 let lastTime = 0;
 let deltaTime = 0;
 let activePiece;
