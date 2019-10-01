@@ -222,7 +222,6 @@ function keyReleased() {
 }
 
 function pauseGame() {
-  console.log(frameRate());
   if (!bisPaused) {
     bisPaused = true;
     setFrameRate(0);

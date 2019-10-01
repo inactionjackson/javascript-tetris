@@ -20,9 +20,7 @@ class GameGrid {
   }
 
   reset() {
-    console.log("resetting grid");
     this.grid = create2dArray(this.height, this.width, this.defaultValue);
-    console.log(this.grid);
   }
 
   copyPieceToGrid(t) {
@@ -62,7 +60,7 @@ class GameGrid {
     }
     matchedRows.forEach(r => {
       this.grid.splice(r, 1);
-      this.grid.unshift(new Array(this.width).fill(0));
+      this.grid.unshift(new Array(this.width).fill(this.defaultValue));
       verticalMoveTimeLimit = Math.max(verticalMoveTimeLimit - 60, 60);
     });
     score += numOfmatches * numOfmatches * 10;
@@ -196,7 +194,6 @@ class Piece {
   getRandomNextLetter() {
     let keys = Object.keys(this.SHAPES);
     let newLetter = keys[Math.floor(Math.random() * keys.length)];
-    console.log(this.shapeLetter, newLetter);
     if (newLetter !== this.shapeLetter) {
       this.nextLetter = newLetter;
     } else {
